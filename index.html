@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리 가족 자산 현황</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #F5F1E8;
+    --bg-tint: #EFEAD8;
+    --surface: #FFFCF5;
+    --surface-2: #FAF6EA;
+    --ink: #1C1B1A;
+    --ink-soft: #3A3833;
+    --muted: #7A746B;
+    --muted-soft: #A39C8E;
+    --line: #E0D9C5;
+    --line-soft: #ECE6D4;
+    --gold: #B08D4D;
+    --gold-soft: #D4B57A;
+    --positive: #5A7A4A;
+    --negative: #B05346;
+    --shadow-1: 0 1px 2px rgba(28, 27, 26, 0.04), 0 4px 12px rgba(28, 27, 26, 0.04);
+    --shadow-2: 0 2px 6px rgba(28, 27, 26, 0.06), 0 12px 32px rgba(28, 27, 26, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: 
+      radial-gradient(circle at 15% 10%, rgba(176, 141, 77, 0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(90, 122, 74, 0.04), transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .brand {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .brand .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .brand h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 40px;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+  .brand h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--gold);
+  }
+  .meta {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .meta .date {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  /* HERO TOTAL */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 48px 56px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(176, 141, 77, 0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .hero-amount {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 80px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .hero-amount .symbol {
+    font-size: 36px;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .hero-amount .full {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .hero-side {
+    text-align: right;
+    display: flex; flex-direction: column; gap: 12px;
+    min-width: 220px;
+  }
+  .delta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 2px;
+    display: inline-block;
+    align-self: flex-end;
+  }
+  .delta.up { background: rgba(90, 122, 74, 0.1); color: var(--positive); }
+  .delta.down { background: rgba(176, 83, 70, 0.1); color: var(--negative); }
+  .delta.flat { background: var(--bg-tint); color: var(--muted); }
+  .hero-prev {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* CATEGORY CARDS */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 30px;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-1);
+  }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 22px;
+  }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 20px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .card-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .card-amount {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .card-full {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .card-breakdown {
+    border-top: 1px solid var(--line-soft);
+    padding-top: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .breakdown-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px;
+  }
+  .breakdown-row .label { color: var(--muted); }
+  .breakdown-row .value { 
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink-soft);
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: end;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 300;
+  }
+  .section-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* CHART */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px;
+    box-shadow: var(--shadow-1);
+  }
+  .chart-toggles {
+    display: flex; gap: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--muted);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--gold-soft); }
+  .chip.active { 
+    background: var(--ink); 
+    color: var(--surface);
+    border-color: var(--ink);
+  }
+  #chartCanvas { max-height: 360px; }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 980px;
+  }
+  thead th {
+    background: var(--surface-2);
+    padding: 14px 14px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  thead th:first-child { text-align: left; padding-left: 24px; }
+  thead th:last-child { padding-right: 24px; }
+
+  tbody td {
+    padding: 13px 14px;
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  tbody td:first-child { 
+    text-align: left; 
+    padding-left: 24px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  tbody td.total {
+    color: var(--ink);
+    font-weight: 600;
+    background: var(--surface-2);
+  }
+  tbody td:last-child { padding-right: 16px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+
+  .row-actions {
+    display: flex; gap: 6px; justify-content: flex-end;
+  }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    width: 26px; height: 26px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    transition: all 0.15s ease;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--gold); background: var(--surface); }
+  .icon-btn.danger:hover { color: var(--negative); border-color: var(--negative); }
+
+  /* FORM */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 36px;
+    box-shadow: var(--shadow-1);
+  }
+  .form-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px 20px;
+    margin-bottom: 24px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.span-2 { grid-column: span 2; }
+  .field label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 10px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.15s ease;
+    width: 100%;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: var(--surface);
+  }
+  .field-group-label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--gold);
+    grid-column: span 4;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    margin-top: 6px;
+  }
+  .field-group-label:first-of-type { 
+    border-top: none; 
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .form-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+  .form-hints {
+    font-size: 12px; color: var(--muted);
+  }
+  .btn-row { display: flex; gap: 10px; }
+  
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 11px 22px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    background: transparent;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: var(--ink);
+  }
+  .btn-primary:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .btn-ghost {
+    color: var(--muted);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* DATA TOOLS */
+  .tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-top: 24px;
+  }
+  .tools-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tools-text strong { color: var(--ink-soft); font-weight: 500; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--surface);
+    padding: 12px 22px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: var(--shadow-2);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(28, 27, 26, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 32px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow-2);
+  }
+  .modal h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .modal p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+  .modal .btn-row { justify-content: flex-end; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 64px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-soft);
+  }
+  footer span { color: var(--gold); }
+
+  /* RESPONSIVE */
+  @media (max-width: 920px) {
+    .wrap { padding: 32px 20px 64px; }
+    header { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .meta { text-align: left; }
+    .hero { padding: 32px 28px; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-side { text-align: left; align-items: flex-start; }
+    .delta { align-self: flex-start; }
+    .hero-amount { font-size: 52px; }
+    .hero-amount .symbol { font-size: 26px; }
+    .cards { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
+    .field.span-2 { grid-column: span 2; }
+    .field-group-label { grid-column: span 2; }
+    .form-actions { flex-direction: column; gap: 16px; align-items: stretch; }
+    .btn-row { flex-direction: column; }
+    .tools { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .brand h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="eyebrow">Family Wealth · Ledger</span>
+      <h1>우리 가족 <em>자산현황</em></h1>
+    </div>
+    <div class="meta">
+      <div class="date" id="latestDate">—</div>
+      <div id="recordCount">기록 0건</div>
+    </div>
+  </header>
+
+  <!-- TOTAL HERO -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-label">Total Net Worth · 총자산</div>
+        <div class="hero-amount">
+          <span class="symbol">₩</span>
+          <span id="heroAmount">0</span>
+          <span class="full" id="heroFull">0원</span>
+        </div>
+      </div>
+      <div class="hero-side">
+        <span class="delta flat" id="heroDelta">변동 없음</span>
+        <span class="hero-prev" id="heroPrev">이전 기록 없음</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORY CARDS -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">남편 자산</span>
+        <span class="card-tag">Husband</span>
+      </div>
+      <div class="card-amount" id="card1Amount">—</div>
+      <div class="card-full" id="card1Full">—</div>
+      <div class="card-breakdown">
+        <div class="breakdown-row"><span class="label">주식</span><span class="value" id="b_stock">—</span></div>
+        <div class="breakdown-row"><span class="label">코인</span><span class="value" id="b_crypto">—</span></div>
+        <div class="breakdown-row"><span class="label">연금</span><span class="value" id="b_pension">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">희정 자산</span>
+        <span class="card-tag">Heejung</span>
+      </div>
+      <div class="card-amount" id="card2Amount">—</div>
+      <div class="card-full" id="card2Full">—</div>
+      <div class="card-breakdown">
+        <div class="breakdown-row"><span class="label">주식</span><span class="value" id="b_hjstock">—</span></div>
+        <div class="breakdown-row"><span class="label">코인</span><span class="value" id="b_hjcrypto">—</span></div>
+        <div class="breakdown-row"><span class="label">연금</span><span class="value" id="b_hjpension">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">자녀 자산</span>
+        <span class="card-tag">Children</span>
+      </div>
+      <div class="card-amount" id="card3Amount">—</div>
+      <div class="card-full" id="card3Full">—</div>
+      <div class="card-breakdown">
+        <div class="breakdown-row"><span class="label">서현</span><span class="value" id="b_seohyun">—</span></div>
+        <div class="breakdown-row"><span class="label">서진</span><span class="value" id="b_seojin">—</span></div>
+        <div class="breakdown-row"><span class="label">민준</span><span class="value" id="b_minjun">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">자산 <em>추이</em></h2>
+      <span class="section-sub">Trajectory · over time</span>
+    </div>
+    <div class="chart-card">
+      <div class="chart-toggles" id="chartToggles">
+        <button class="chip active" data-view="total">총자산</button>
+        <button class="chip" data-view="category">카테고리별 누적</button>
+        <button class="chip" data-view="detail">세부 항목 누적</button>
+      </div>
+      <canvas id="chartCanvas"></canvas>
+    </div>
+  </section>
+
+  <!-- ADD/EDIT FORM -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">새 기록 <em>추가</em></h2>
+      <span class="section-sub" id="formMode">Add · new entry</span>
+    </div>
+    <div class="form-card">
+      <div class="form-status" id="formStatus">신규 기록 작성 중</div>
+      <form id="entryForm">
+        <div class="form-grid">
+
+          <div class="field span-2">
+            <label>기록 날짜</label>
+            <input type="date" id="f_date" required>
+          </div>
+          <div class="field span-2">
+            <label>빠른 작성</label>
+            <button type="button" class="btn btn-ghost" id="fillPrev" style="height: 40px;">↻ 이전 값으로 채우기</button>
+          </div>
+
+          <div class="field-group-label">남편 자산</div>
+          <div class="field">
+            <label>주식</label>
+            <input type="number" id="f_stock" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>코인</label>
+            <input type="number" id="f_crypto" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>연금</label>
+            <input type="number" id="f_pension" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field"></div>
+
+          <div class="field-group-label">희정 자산</div>
+          <div class="field">
+            <label>희정주식</label>
+            <input type="number" id="f_hj_stock" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>희정코인</label>
+            <input type="number" id="f_hj_crypto" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>희정연금</label>
+            <input type="number" id="f_hj_pension" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field"></div>
+
+          <div class="field-group-label">자녀 자산</div>
+          <div class="field">
+            <label>서현</label>
+            <input type="number" id="f_seohyun" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>서진</label>
+            <input type="number" id="f_seojin" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label>민준</label>
+            <input type="number" id="f_minjun" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field"></div>
+        </div>
+
+        <div class="form-actions">
+          <div class="form-hints">
+            금액은 원(KRW) 단위로 입력. 같은 날짜에 기록이 있으면 덮어씁니다.
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="cancelEdit" style="display: none;">취소</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">기록 저장</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">전체 <em>기록</em></h2>
+      <span class="section-sub" id="tableSub">All entries · most recent first</span>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>주식</th>
+              <th>코인</th>
+              <th>연금</th>
+              <th>희정주식</th>
+              <th>희정코인</th>
+              <th>희정연금</th>
+              <th>서현</th>
+              <th>서진</th>
+              <th>민준</th>
+              <th>총자산</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA TOOLS -->
+  <div class="tools">
+    <div class="tools-text">
+      <strong>데이터 백업</strong> · 기록은 이 브라우저에 저장됩니다. 다른 기기에서 보거나 분실에 대비해 정기적으로 JSON 백업을 권장합니다.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="exportBtn">↓ JSON 내보내기</button>
+      <button class="btn btn-ghost" id="importBtn">↑ JSON 가져오기</button>
+      <button class="btn btn-ghost" id="resetBtn" style="color: var(--negative); border-color: var(--line);">초기화</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none;">
+    </div>
+  </div>
+
+  <footer>
+    Family Ledger · <span>Made with care</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast">저장되었습니다</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">확인</h3>
+    <p id="modalText">정말 진행하시겠습니까?</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="modalCancel">취소</button>
+      <button class="btn btn-primary" id="modalOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// INITIAL DATA (from Excel)
+// ─────────────────────────────────────────
+const INITIAL_DATA = [
+  {"date":"2025-08-27","stock":21809217,"crypto":27338131,"pension":69464853,"hj_stock":269108579,"hj_crypto":21598523,"hj_pension":11836846,"seohyun":0,"seojin":0,"minjun":3378620},
+  {"date":"2025-09-01","stock":28430779,"crypto":24698882,"pension":70699206,"hj_stock":269108579,"hj_crypto":21598523,"hj_pension":11836846,"seohyun":0,"seojin":0,"minjun":3378620},
+  {"date":"2025-09-19","stock":32443432,"crypto":26347131,"pension":73740559,"hj_stock":284469677,"hj_crypto":22340464,"hj_pension":14980405,"seohyun":0,"seojin":0,"minjun":3836362},
+  {"date":"2025-09-30","stock":37397044,"crypto":18291046,"pension":73562192,"hj_stock":355371423,"hj_crypto":18683755,"hj_pension":18585444,"seohyun":0,"seojin":0,"minjun":3836362},
+  {"date":"2025-10-13","stock":37089220,"crypto":19260548,"pension":74789004,"hj_stock":355371423,"hj_crypto":18683755,"hj_pension":18585444,"seohyun":0,"seojin":0,"minjun":3836362},
+  {"date":"2025-11-11","stock":43430913,"crypto":17561402,"pension":76898646,"hj_stock":355371423,"hj_crypto":18683755,"hj_pension":18585444,"seohyun":0,"seojin":0,"minjun":4739025},
+  {"date":"2025-11-19","stock":44477479,"crypto":15303594,"pension":75773074,"hj_stock":339421183,"hj_crypto":16447334,"hj_pension":19099323,"seohyun":0,"seojin":0,"minjun":5707079},
+  {"date":"2025-11-30","stock":46410544,"crypto":20395109,"pension":77763892,"hj_stock":339421183,"hj_crypto":16447334,"hj_pension":19099323,"seohyun":0,"seojin":0,"minjun":5707079},
+  {"date":"2025-12-14","stock":48504097,"crypto":20089031,"pension":78261352,"hj_stock":339421183,"hj_crypto":16447334,"hj_pension":19099323,"seohyun":0,"seojin":0,"minjun":6708270},
+  {"date":"2026-01-03","stock":48531836,"crypto":0,"pension":77124598,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":7742353},
+  {"date":"2026-01-14","stock":59586480,"crypto":0,"pension":79992755,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":7742353},
+  {"date":"2026-01-31","stock":104279740,"crypto":0,"pension":79446914,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":8090000},
+  {"date":"2026-02-20","stock":105249020,"crypto":952204,"pension":88466416,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":8857410},
+  {"date":"2026-03-18","stock":107775083,"crypto":2049333,"pension":90028139,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":9019996},
+  {"date":"2026-04-23","stock":115964604,"crypto":6671512,"pension":96330939,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":0},
+  {"date":"2026-04-29","stock":126081403,"crypto":0,"pension":96822106,"hj_stock":390862060,"hj_crypto":3000000,"hj_pension":30311122,"seohyun":0,"seojin":0,"minjun":0}
+];
+
+const STORAGE_KEY = 'familyAssets_v1';
+const FIELDS = ['stock','crypto','pension','hj_stock','hj_crypto','hj_pension','seohyun','seojin','minjun'];
+const FIELD_LABEL = {stock:'주식', crypto:'코인', pension:'연금', hj_stock:'희정주식', hj_crypto:'희정코인', hj_pension:'희정연금', seohyun:'서현', seojin:'서진', minjun:'민준'};
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let state = { entries: [], editingDate: null };
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) state.entries = parsed;
+    } else {
+      state.entries = JSON.parse(JSON.stringify(INITIAL_DATA));
+      saveState();
+    }
+  } catch (e) {
+    console.error('load error', e);
+    state.entries = JSON.parse(JSON.stringify(INITIAL_DATA));
+  }
+  state.entries.sort((a,b) => a.date.localeCompare(b.date));
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+  } catch (e) {
+    console.error('save error', e);
+    toast('저장 실패: ' + e.message);
+  }
+}
+
+// ─────────────────────────────────────────
+// FORMAT HELPERS
+// ─────────────────────────────────────────
+function fmtFull(n) {
+  return new Intl.NumberFormat('ko-KR').format(Math.round(n || 0)) + '원';
+}
+function fmtComma(n) {
+  return new Intl.NumberFormat('ko-KR').format(Math.round(n || 0));
+}
+// Korean abbreviated: 1억 2,345만 / 5,678만 / 1,234
+function fmtKR(n) {
+  n = Math.round(n || 0);
+  if (n === 0) return '0';
+  const eok = Math.floor(n / 100000000);
+  const man = Math.floor((n % 100000000) / 10000);
+  const won = n % 10000;
+  let out = '';
+  if (eok > 0) {
+    out += eok + '억';
+    if (man > 0) out += ' ' + new Intl.NumberFormat('ko-KR').format(man) + '만';
+  } else if (man > 0) {
+    out += new Intl.NumberFormat('ko-KR').format(man) + '만';
+    if (won > 0) out += ' ' + new Intl.NumberFormat('ko-KR').format(won);
+  } else {
+    out = new Intl.NumberFormat('ko-KR').format(won);
+  }
+  return out;
+}
+function fmtDelta(n) {
+  const sign = n > 0 ? '+' : (n < 0 ? '−' : '');
+  return sign + new Intl.NumberFormat('ko-KR').format(Math.abs(Math.round(n))) + '원';
+}
+function totalOf(e) {
+  return FIELDS.reduce((s, f) => s + (e[f] || 0), 0);
+}
+function husbandOf(e) { return (e.stock||0) + (e.crypto||0) + (e.pension||0); }
+function hjOf(e) { return (e.hj_stock||0) + (e.hj_crypto||0) + (e.hj_pension||0); }
+function childrenOf(e) { return (e.seohyun||0) + (e.seojin||0) + (e.minjun||0); }
+function fmtDate(s) {
+  const [y,m,d] = s.split('-');
+  return `${y}.${m}.${d}`;
+}
+
+// ─────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────
+function renderHero() {
+  const entries = state.entries;
+  if (!entries.length) {
+    document.getElementById('heroAmount').textContent = '0';
+    document.getElementById('heroFull').textContent = '0원';
+    document.getElementById('heroDelta').textContent = '기록 없음';
+    document.getElementById('heroDelta').className = 'delta flat';
+    document.getElementById('heroPrev').textContent = '';
+    document.getElementById('latestDate').textContent = '—';
+    document.getElementById('recordCount').textContent = '기록 0건';
+    return;
+  }
+  const latest = entries[entries.length - 1];
+  const prev = entries.length > 1 ? entries[entries.length - 2] : null;
+  const total = totalOf(latest);
+  const prevTotal = prev ? totalOf(prev) : null;
+
+  document.getElementById('heroAmount').textContent = fmtKR(total);
+  document.getElementById('heroFull').textContent = fmtFull(total);
+  document.getElementById('latestDate').textContent = fmtDate(latest.date) + ' 기준';
+  document.getElementById('recordCount').textContent = `기록 ${entries.length}건`;
+
+  const deltaEl = document.getElementById('heroDelta');
+  const prevEl = document.getElementById('heroPrev');
+  if (prevTotal !== null) {
+    const diff = total - prevTotal;
+    const pct = prevTotal !== 0 ? (diff / prevTotal * 100) : 0;
+    deltaEl.textContent = `${diff > 0 ? '▲' : (diff < 0 ? '▼' : '—')} ${fmtDelta(diff)}  ·  ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+    deltaEl.className = 'delta ' + (diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat'));
+    prevEl.textContent = `이전: ${fmtDate(prev.date)} · ${fmtFull(prevTotal)}`;
+  } else {
+    deltaEl.textContent = '첫 기록';
+    deltaEl.className = 'delta flat';
+    prevEl.textContent = '비교할 이전 기록 없음';
+  }
+}
+
+function renderCards() {
+  const e = state.entries[state.entries.length - 1];
+  if (!e) return;
+  const hus = husbandOf(e);
+  const hj = hjOf(e);
+  const ch = childrenOf(e);
+
+  document.getElementById('card1Amount').textContent = fmtKR(hus);
+  document.getElementById('card1Full').textContent = fmtFull(hus);
+  document.getElementById('b_stock').textContent = fmtComma(e.stock);
+  document.getElementById('b_crypto').textContent = fmtComma(e.crypto);
+  document.getElementById('b_pension').textContent = fmtComma(e.pension);
+
+  document.getElementById('card2Amount').textContent = fmtKR(hj);
+  document.getElementById('card2Full').textContent = fmtFull(hj);
+  document.getElementById('b_hjstock').textContent = fmtComma(e.hj_stock);
+  document.getElementById('b_hjcrypto').textContent = fmtComma(e.hj_crypto);
+  document.getElementById('b_hjpension').textContent = fmtComma(e.hj_pension);
+
+  document.getElementById('card3Amount').textContent = fmtKR(ch);
+  document.getElementById('card3Full').textContent = fmtFull(ch);
+  document.getElementById('b_seohyun').textContent = fmtComma(e.seohyun);
+  document.getElementById('b_seojin').textContent = fmtComma(e.seojin);
+  document.getElementById('b_minjun').textContent = fmtComma(e.minjun);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const sub = document.getElementById('tableSub');
+  if (!state.entries.length) {
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color: var(--muted); padding: 40px;">기록이 없습니다</td></tr>`;
+    sub.textContent = 'No entries';
+    return;
+  }
+  sub.textContent = `${state.entries.length} entries · 최신 순`;
+  // newest first
+  const sorted = [...state.entries].sort((a,b) => b.date.localeCompare(a.date));
+  tbody.innerHTML = sorted.map(e => {
+    const tot = totalOf(e);
+    return `<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td>${fmtComma(e.stock)}</td>
+      <td>${fmtComma(e.crypto)}</td>
+      <td>${fmtComma(e.pension)}</td>
+      <td>${fmtComma(e.hj_stock)}</td>
+      <td>${fmtComma(e.hj_crypto)}</td>
+      <td>${fmtComma(e.hj_pension)}</td>
+      <td>${fmtComma(e.seohyun)}</td>
+      <td>${fmtComma(e.seojin)}</td>
+      <td>${fmtComma(e.minjun)}</td>
+      <td class="total">${fmtComma(tot)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="수정" data-edit="${e.date}">✎</button>
+          <button class="icon-btn danger" title="삭제" data-del="${e.date}">×</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-edit]').forEach(b => {
+    b.addEventListener('click', () => startEdit(b.dataset.edit));
+  });
+  tbody.querySelectorAll('[data-del]').forEach(b => {
+    b.addEventListener('click', () => confirmDelete(b.dataset.del));
+  });
+}
+
+// ─────────────────────────────────────────
+// CHART
+// ─────────────────────────────────────────
+let chart = null;
+let chartView = 'total';
+
+const COLORS = {
+  total: '#1C1B1A',
+  husband: '#E8B95C',
+  heejung: '#8FBE7E',
+  children: '#EC8B7A',
+  stock: '#E8B95C',
+  crypto: '#F0A172',
+  pension: '#D9A845',
+  hj_stock: '#8FBE7E',
+  hj_crypto: '#B5D4A0',
+  hj_pension: '#6BA060',
+  seohyun: '#EC8B7A',
+  seojin: '#F4B4A8',
+  minjun: '#DC6E5C'
+};
+
+function hexA(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function buildChart() {
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+  if (chart) chart.destroy();
+
+  const labels = state.entries.map(e => fmtDate(e.date));
+  let datasets;
+
+  if (chartView === 'total') {
+    datasets = [{
+      label: '총자산',
+      data: state.entries.map(e => totalOf(e)),
+      borderColor: COLORS.total,
+      backgroundColor: hexA(COLORS.husband, 0.28),
+      borderWidth: 2,
+      fill: 'origin',
+      tension: 0.2,
+      pointRadius: 3,
+      pointBackgroundColor: COLORS.total,
+      pointBorderColor: '#FFFCF5',
+      pointBorderWidth: 2,
+      pointHoverRadius: 6
+    }];
+  } else if (chartView === 'category') {
+    datasets = [
+      { label: '남편', data: state.entries.map(husbandOf), borderColor: COLORS.husband, backgroundColor: hexA(COLORS.husband, 0.85), borderWidth: 1.5, fill: true, tension: 0.2, pointRadius: 2 },
+      { label: '희정', data: state.entries.map(hjOf), borderColor: COLORS.heejung, backgroundColor: hexA(COLORS.heejung, 0.85), borderWidth: 1.5, fill: true, tension: 0.2, pointRadius: 2 },
+      { label: '자녀', data: state.entries.map(childrenOf), borderColor: COLORS.children, backgroundColor: hexA(COLORS.children, 0.85), borderWidth: 1.5, fill: true, tension: 0.2, pointRadius: 2 }
+    ];
+  } else {
+    datasets = FIELDS.map(f => ({
+      label: FIELD_LABEL[f],
+      data: state.entries.map(e => e[f] || 0),
+      borderColor: hexA(COLORS[f], 0.95),
+      backgroundColor: hexA(COLORS[f], 0.85),
+      borderWidth: 1,
+      fill: true,
+      tension: 0.2,
+      pointRadius: 1.5
+    }));
+  }
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: 'IBM Plex Mono', size: 11 },
+            color: '#3A3833',
+            padding: 16,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 6,
+            boxHeight: 6
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1C1B1A',
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 12 },
+          footerFont: { family: 'IBM Plex Mono', size: 11, weight: '600' },
+          padding: 12,
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${fmtFull(ctx.parsed.y)}`,
+            footer: (items) => {
+              if (items.length <= 1) return '';
+              const sum = items.reduce((s, it) => s + it.parsed.y, 0);
+              return '합계: ' + fmtFull(sum);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { color: '#ECE6D4' },
+          ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#7A746B', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+        },
+        y: {
+          stacked: true,
+          grid: { color: '#ECE6D4' },
+          ticks: {
+            font: { family: 'IBM Plex Mono', size: 10 }, color: '#7A746B',
+            callback: (v) => {
+              if (v >= 100000000) return (v/100000000).toFixed(1) + '억';
+              if (v >= 10000) return (v/10000).toFixed(0) + '만';
+              return v;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+document.getElementById('chartToggles').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#chartToggles .chip').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  chartView = e.target.dataset.view;
+  buildChart();
+});
+
+// ─────────────────────────────────────────
+// FORM
+// ─────────────────────────────────────────
+function setFormDateDefault() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('f_date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+function clearForm() {
+  state.editingDate = null;
+  document.getElementById('entryForm').reset();
+  setFormDateDefault();
+  FIELDS.forEach(f => document.getElementById('f_' + f).value = '');
+  document.getElementById('formStatus').textContent = '신규 기록 작성 중';
+  document.getElementById('formMode').textContent = 'Add · new entry';
+  document.getElementById('submitBtn').textContent = '기록 저장';
+  document.getElementById('cancelEdit').style.display = 'none';
+}
+
+function startEdit(date) {
+  const entry = state.entries.find(e => e.date === date);
+  if (!entry) return;
+  state.editingDate = date;
+  document.getElementById('f_date').value = entry.date;
+  FIELDS.forEach(f => document.getElementById('f_' + f).value = entry[f] || 0);
+  document.getElementById('formStatus').textContent = `수정 중 · ${fmtDate(date)}`;
+  document.getElementById('formMode').textContent = 'Edit · existing entry';
+  document.getElementById('submitBtn').textContent = '수정 저장';
+  document.getElementById('cancelEdit').style.display = 'inline-block';
+  document.getElementById('entryForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelEdit').addEventListener('click', clearForm);
+
+document.getElementById('fillPrev').addEventListener('click', () => {
+  if (!state.entries.length) {
+    toast('이전 기록이 없습니다');
+    return;
+  }
+  const last = state.entries[state.entries.length - 1];
+  FIELDS.forEach(f => document.getElementById('f_' + f).value = last[f] || 0);
+  toast('이전 값으로 채워졌습니다');
+});
+
+document.getElementById('entryForm').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const date = document.getElementById('f_date').value;
+  if (!date) { toast('날짜를 입력하세요'); return; }
+  const newEntry = { date };
+  FIELDS.forEach(f => {
+    const v = document.getElementById('f_' + f).value;
+    newEntry[f] = v === '' ? 0 : Math.max(0, Math.round(Number(v)));
+  });
+
+  // Replace by date if exists
+  const idx = state.entries.findIndex(e => e.date === date);
+  if (state.editingDate && state.editingDate !== date) {
+    // editing changed the date — remove the old one
+    state.entries = state.entries.filter(e => e.date !== state.editingDate);
+  }
+  if (idx >= 0 && (!state.editingDate || state.editingDate === date)) {
+    state.entries[idx] = newEntry;
+  } else {
+    const idx2 = state.entries.findIndex(e => e.date === date);
+    if (idx2 >= 0) state.entries[idx2] = newEntry;
+    else state.entries.push(newEntry);
+  }
+  state.entries.sort((a,b) => a.date.localeCompare(b.date));
+  saveState();
+  renderAll();
+  toast(state.editingDate ? '기록이 수정되었습니다' : '기록이 저장되었습니다');
+  clearForm();
+});
+
+// ─────────────────────────────────────────
+// DELETE
+// ─────────────────────────────────────────
+function confirmDelete(date) {
+  showModal('기록을 삭제할까요?', `${fmtDate(date)} 기록이 영구 삭제됩니다.`, () => {
+    state.entries = state.entries.filter(e => e.date !== date);
+    saveState();
+    renderAll();
+    toast('삭제되었습니다');
+    if (state.editingDate === date) clearForm();
+  });
+}
+
+// ─────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────
+let modalCallback = null;
+function showModal(title, text, onOk) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalText').textContent = text;
+  modalCallback = onOk;
+  document.getElementById('modalBg').classList.add('show');
+}
+function hideModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  modalCallback = null;
+}
+document.getElementById('modalCancel').addEventListener('click', hideModal);
+document.getElementById('modalOk').addEventListener('click', () => {
+  if (modalCallback) modalCallback();
+  hideModal();
+});
+document.getElementById('modalBg').addEventListener('click', (e) => {
+  if (e.target.id === 'modalBg') hideModal();
+});
+
+// ─────────────────────────────────────────
+// EXPORT / IMPORT / RESET
+// ─────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state.entries, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `family_assets_${today}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('JSON 파일을 내보냈습니다');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('형식 오류');
+      // Validate
+      const valid = data.every(d => d.date && typeof d.date === 'string');
+      if (!valid) throw new Error('데이터 형식이 올바르지 않습니다');
+      showModal('기존 기록을 덮어쓸까요?', `${data.length}건의 기록을 가져옵니다. 현재 ${state.entries.length}건은 모두 교체됩니다.`, () => {
+        // Normalize
+        state.entries = data.map(d => {
+          const norm = { date: d.date };
+          FIELDS.forEach(f => norm[f] = Number(d[f]) || 0);
+          return norm;
+        }).sort((a,b) => a.date.localeCompare(b.date));
+        saveState();
+        renderAll();
+        toast('가져오기 완료');
+      });
+    } catch (err) {
+      toast('가져오기 실패: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  showModal('초기 데이터로 되돌릴까요?', '현재의 모든 기록이 사라지고 초기 데이터로 교체됩니다. 되돌릴 수 없습니다.', () => {
+    state.entries = JSON.parse(JSON.stringify(INITIAL_DATA));
+    saveState();
+    renderAll();
+    clearForm();
+    toast('초기화되었습니다');
+  });
+});
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ─────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────
+function renderAll() {
+  renderHero();
+  renderCards();
+  renderTable();
+  buildChart();
+}
+
+loadState();
+renderAll();
+clearForm();
+</script>
+</body>
+</html>
